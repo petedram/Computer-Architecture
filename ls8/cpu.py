@@ -2,12 +2,16 @@
 
 import sys
 
+
 class CPU:
     """Main CPU class."""
 
     def __init__(self):
         """Construct a new CPU."""
-        pass
+        #hold 256 bytes of memory and 8 general-purpose registers.
+        self.ram = [00000000] * 256 #256 bytes of mem
+        self.register = [0] * 8 #8 bytes of registers
+        self.pc = 0 #program counter
 
     def load(self):
         """Load a program into memory."""
