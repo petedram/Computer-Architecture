@@ -10,7 +10,7 @@ class CPU:
         """Construct a new CPU."""
         #hold 256 bytes of memory and 8 general-purpose registers.
         self.ram = [00000000] * 256 #256 bytes of mem
-        self.register = [0] * 8 #8 bytes of registers
+        self.reg = [0] * 8 #8 bytes of registers
         self.pc = 0 #program counter
 
     def load(self):
@@ -45,7 +45,7 @@ class CPU:
     def ram_write(self, MAR, MDR):
 
         self.ram[MAR] = MDR
-        
+
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -78,4 +78,13 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        self.pc = 0
+
+        running = True
+
+        while running:
+            IR = self.ram_read(self.pc)
+
+            operand_a = self.ram_read(self.pc +1)
+            operand_b = self.ram_read(self.pc +2)
+
