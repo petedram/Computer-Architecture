@@ -12,6 +12,12 @@ class CPU:
         self.ram = [00000000] * 256 #256 bytes of mem
         self.reg = [0] * 8 #8 bytes of registers
         self.pc = 0 #program counter
+        self.running = False
+        self.HLT = 0b00000001
+        self.LDI = 0b10000010
+        self.PRN = 0b01000111
+
+
 
     def load(self):
         """Load a program into memory."""
@@ -84,7 +90,25 @@ class CPU:
 
         while running:
             IR = self.ram_read(self.pc)
-
+    
             operand_a = self.ram_read(self.pc +1)
             operand_b = self.ram_read(self.pc +2)
 
+            if IR == self.HLT:
+                running = False
+                self.pc +=1
+
+            elif IR == self.LDI:
+                reg = operand_a
+                val = operand_b
+                self.reg[reg] = val
+                self.pc +=1
+
+            elif IR == self.PRN:
+                reg = self.ram[self.pc+1]
+                print(self.reg[reg])
+                self.pc +=1
+
+            else:
+                print('wrong instruction/address: ', IR, self.pc)
+                raise ValueError
