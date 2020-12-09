@@ -13,6 +13,8 @@ class CPU:
         self.reg = [0] * 8 #8 bytes of registers
         self.pc = 0 #program counter
         self.running = False
+        #The SP points at the value at the top of the stack (most recently pushed), or at address `F4` if the stack is empty.
+        self.sp = 7 #R7
 
 
     def load(self):
@@ -103,6 +105,8 @@ class CPU:
         LDI = 0b10000010
         PRN = 0b01000111
         MUL = 0b10100010
+        PUSH = 0b01000101
+        POP = 0b01000110
 
         self.pc = 0
         self.running = True
@@ -128,3 +132,24 @@ class CPU:
             elif IR == MUL:
                 self.alu("MUL", operand_a, operand_b)
                 self.pc +=3
+
+            elif IR == PUSH:
+                #Decrement the `SP`.
+                self.reg[self.sp] -= 1
+
+                #Copy the value in the given register to the address pointed to by `SP`.
+                val = self.reg[operand_a]
+                self.ram[self.reg[self.sp]] = val
+                self.pc += 2
+
+            elif IR == POP:
+                reg = operand_a
+                val = self.ram[self.reg[self.sp]]
+                # Copy the value from the address pointed to by `SP` to the given register.
+                self.reg[reg] = val
+                # Increment `SP`.
+                self.reg[self.sp] +=1
+                self.pc +=2
+
+
+
