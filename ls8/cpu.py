@@ -1,8 +1,5 @@
 """CPU functionality."""
-
 import sys
-
-
 class CPU:
     """Main CPU class."""
 
@@ -15,7 +12,7 @@ class CPU:
         self.running = False
         #The SP points at the value at the top of the stack (most recently pushed), or at address `F4` if the stack is empty.
         self.sp = 7 #R7
-
+        self.fl = 0b00000000 #00000LGE
 
     def load(self):
         """Load a program into memory."""
@@ -39,7 +36,6 @@ class CPU:
         except FileNotFoundError:
             print('file not found')
             raise ValueError
-
 
         # For now, we've just hardcoded a program:
 
@@ -67,7 +63,6 @@ class CPU:
     def ram_write(self, MDR, MAR):
         self.ram[MAR] = MDR
 
-
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
@@ -76,6 +71,14 @@ class CPU:
         #elif op == "SUB": etc
         elif op == "MUL":
             self.reg[reg_a] *= self.reg[reg_b]
+        #Compare - if equal, set E flag to 1, else 0.
+        elif op == 'CMP':
+            if self.reg[reg_a] == self.reg[reg_b]:
+                self.fl = self.fl | 1 #E to 1
+            if self.reg[reg_a] > self.reg[reg_b]:
+                self.fl = self.fl | 2 #G to 1
+            if self.reg[reg_a] < self.reg[reg_b]:
+                self.fl = self.fl | 4 #L to 1
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -111,6 +114,9 @@ class CPU:
         RET = 0b00010001
         JMP = 0b01010100
         ADD = 0b10100000
+        CMP = 0b10100111
+        JEQ = 0b01010101
+        JNE = 0b01010110
 
 
         self.pc = 0
@@ -173,8 +179,26 @@ class CPU:
 
             elif IR == ADD:
                 self.alu("ADD", operand_a, operand_b)
-                self.pc += 3   
+                self.pc += 3
+
+            elif IR == CMP:
+                self.alu('CMP', operand_a, operand_b)
+                self.pc += 3
+
+            elif IR == JEQ:
+                #If `equal` flag is set (true), jump to the address stored in the given register.
+                if self.fl == 1 or self.fl == 3 or self.fl == 5 or self.fl == 7: #check odd
+                    self.reg[self.sp] -=1
+                    self.ram[self.reg[self.sp]] = self.pc + 2
+                    self.pc = self.reg[operand_a]
+                else:
+                    self.pc += 2
             
-
-
-
+            elif IR == JNE:
+                #If `E` flag is clear (false, 0), jump to the address stored in the given register.
+                if self.fl == 0 or self.fl == 2 or self.fl == 3 or self.fl == 4: #check not 1
+                    self.reg[self.sp] -=1
+                    self.ram[self.reg[self.sp]] = self.pc + 2
+                    self.pc = self.reg[operand_a]
+                else:
+                    self.pc += 2
