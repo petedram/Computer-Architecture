@@ -79,6 +79,8 @@ class CPU:
                 self.fl = self.fl | 2 #G to 1
             if self.reg[reg_a] < self.reg[reg_b]:
                 self.fl = self.fl | 4 #L to 1
+        elif op == 'MOD':
+            self.reg[reg_a] %= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -117,6 +119,7 @@ class CPU:
         CMP = 0b10100111
         JEQ = 0b01010101
         JNE = 0b01010110
+        MOD = 0b10100100
 
 
         self.pc = 0
@@ -202,3 +205,8 @@ class CPU:
                     self.pc = self.reg[operand_a]
                 else:
                     self.pc += 2
+
+            elif IR == MOD:
+                self.alu('MOD', operand_a, operand_b)
+                self.pc += 3
+
